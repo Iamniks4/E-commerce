@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react'
-import { Row, Col, ListGroup, Image, Card } from 'react-bootstrap'
+import { Row, Col, ListGroup, Image, Card, Button } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import Loader from '../components/Loader'
 import Message from '../components/Message';
 import { Link } from 'react-router-dom'
-import { getOrderDetails, payOrder, createOrder } from '../actions/orderActions'
+import { getOrderDetails, payOrder, deliverOrder } from '../actions/orderActions'
 import axios from 'axios';
 import { PayPalButton } from 'react-paypal-button-v2'
 import { orderConstants } from '../constants/orderConstants';
+import PayPal from '../components/PayPal';
 
-const OrderScreen = ({ match }) => {
+const OrderScreen = ({ match, history }) => {
 
     const order_id = match.params.id
 
@@ -27,40 +28,43 @@ const OrderScreen = ({ match }) => {
 
     const { success: successPay, loading: loadingPay, error: errorPay } = orderPay;
 
+    const orderDeliver = useSelector(state => state.orderDeliver);
+    const { loading: loadingDeliver, success: successDeliver, error: errorDeliver } = orderDeliver;
+
+    const userLogin = useSelector((state) => state.userLogin)
+    const { userInfo } = userLogin
+
     if(!loading) {
         order.itemsPrice = addDecimals(order.orderItems.reduce((acc, item) => acc + item.price * item.qty, 0));
     }
 
     useEffect(() => {
 
-        const addPayPalScript = async() => {
-            const { data: clientId } = await axios.get(`http://localhost:3000/api/config/paypal`);
-            const script = document.createElement('script');
-
-            script.type = 'text/javascript'
-            script.async = true;
-            script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}`
-            script.onload = () => {
-                setSdkReady(true);
-            }
-            document.body.appendChild(script);
+        if(!userInfo) {
+            history.push('/login')
         }
 
-        if(!order || order._id !== order_id || successPay) {
+        if(!order || order._id !== order_id || successPay || successDeliver) {
             dispatch({ type: orderConstants.ORDER_PAY_RESET });
+            dispatch({ type: orderConstants.ORDER_DELIVER_RESET })
             dispatch(getOrderDetails(order_id));
         } else if(!order.isPaid) {
             if(!window.paypal){
-                addPayPalScript();  
+                // addPayPalScript();  
             } else {
                 setSdkReady(true);
             }
         }
-    }, [order_id, dispatch, order, successPay])
+    }, [order_id, dispatch, order, successPay, successDeliver, history, userInfo])
 
     const successPaymentHandler = (paymentResult) => {
         console.log(paymentResult);
         dispatch(payOrder(order_id, paymentResult));
+    }
+
+    const deliverHandler = () => {
+        console.log(order);
+        dispatch(deliverOrder(order));
     }
 
     return loading
@@ -160,8 +164,17 @@ const OrderScreen = ({ match }) => {
                                         <ListGroup.Item>
                                             {loadingPay && <Loader />}
                                             {!sdkReady ? <Loader /> : (
-                                                <PayPalButton amount={order.totalPrice} onSuccess={successPaymentHandler} options={{ clientId: process.env.PAYPAL_CLIENT_ID }}/>
+                                                // <PayPalButton amount={order.totalPrice} onSuccess={successPaymentHandler} options={{ clientId: process.env.PAYPAL_CLIENT_ID }}/>
+                                                <PayPal order={order} successPaymentHandler={successPaymentHandler}/>
                                             )}
+                                        </ListGroup.Item>
+                                    )}
+                                    {userInfo && userInfo.isAdmin && !order.isDelivered && order.isPaid && (
+                                        <ListGroup.Item>
+                                            {loadingDeliver && <Loader />}
+                                            <Button type='button' className='btn btn-block' onClick={deliverHandler}>
+                                                Mark as Delivered
+                                            </Button>
                                         </ListGroup.Item>
                                     )}
                                 </ListGroup>

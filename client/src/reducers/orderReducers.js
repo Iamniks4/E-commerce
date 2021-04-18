@@ -49,3 +49,60 @@ export const orderPayReducer = (initialState = {}, action) => {
             return initialState;
     }
 }
+
+export const getMyOrdersReducer = (initialState = { orders: [] }, action) => {
+    switch(action.type) {
+        case orderConstants.ORDER_LIST_MY_REQUEST:
+            return { loading: true }
+        
+        case orderConstants.ORDER_LIST_MY_SUCCESS:
+            return { loading: false, orders: action.payload }
+
+        case orderConstants.ORDER_LIST_MY_FAIL:
+            return { loading: false, error: action.payload }
+
+        case orderConstants.ORDER_LIST_MY_RESET:
+            return { orders: [] }
+
+        default:
+            return initialState;
+    }
+}
+
+export const getAllOrdersForAdmin = (initialState = { orders: [] }, action) => {
+    switch(action.type) {
+        case orderConstants.ORDER_LIST_REQUEST:
+            return { loading: true }
+
+        case orderConstants.ORDER_LIST_SUCCESS:
+            return { loading: false, orders: action.payload }
+
+        case orderConstants.ORDER_LIST_FAIL:
+            return { loading: false, error: action.payload }
+
+        case orderConstants.ORDER_LIST_RESET:
+            return { orders: [] }
+        
+        default:
+            return initialState;
+    }
+}
+
+export const orderDeliverReducer = (initialState = {}, action) => {
+    switch(action.type) {
+        case orderConstants.ORDER_DELIVER_REQUEST:
+            return { loading: true }
+
+        case orderConstants.ORDER_DELIVER_SUCCESS:
+            return { loading: false, success: true }
+
+        case orderConstants.ORDER_DELIVER_FAIL:
+            return { loading: false, error: action.payload }
+
+        case orderConstants.ORDER_DELIVER_RESET:
+            return { }
+
+        default:
+            return initialState
+    }
+}

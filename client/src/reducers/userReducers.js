@@ -46,6 +46,28 @@ export const userDetailsReducer = (initialState = { user: {} }, action) => {
         case userConstants.USER_DETAILS_FAIL:
             return { loading: false, error: action.payload }
 
+        case userConstants.USER_DETAILS_RESET:
+            return { user: {} }
+
+        default:
+            return initialState;
+    }
+}
+
+export const userListReducer = (initialState = { users: [] }, action) => {
+    switch(action.type) {
+        case userConstants.USER_LIST_REQUEST:
+            return { loading: true };
+        
+        case userConstants.USER_LIST_SUCCESS:
+            return { loading: false, users: action.payload }
+
+        case userConstants.USER_LIST_FAIL:
+            return { loading: false, error: action.payload }
+        
+        case userConstants.USER_LIST_RESET:
+            return { users: [] }
+
         default:
             return initialState;
     }
@@ -61,6 +83,42 @@ export const userUpdateProfileReducer = (initialState = { user: {} }, action) =>
 
         case userConstants.USER_UPDATE_PROFILE_FAIL:
             return { loading: false, error: action.payload, success: false }
+
+        default:
+            return initialState;
+    }
+}
+
+export const userDeleteReducer = (initialState = {}, action) => {
+    switch(action.type) {
+        case userConstants.USER_DELETE_REQUEST:
+            return { loading: true }
+        
+        case userConstants.USER_DELETE_SUCCESS:
+            return { loading: false, success: true }
+
+        case userConstants.USER_DELETE_FAIL:
+            return { loading: false }
+
+        default:
+            return initialState;
+    }
+}
+
+export const updateUserReducer = (initialState = { user: {} }, action) => {
+    switch(action.type) {
+
+        case userConstants.USER_UPDATE_REQUEST:
+            return { loading: true }
+
+        case userConstants.USER_UPDATE_SUCCESS:
+            return { loading: false, success: true }
+        
+        case userConstants.USER_UPDATE_FAIL:
+            return { loading: false, error: action.payload }
+        
+        case userConstants.USER_UPDATE_RESET:
+            return { user: {} }
 
         default:
             return initialState;
